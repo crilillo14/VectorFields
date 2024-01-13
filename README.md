@@ -1,21 +1,2 @@
 # VectorFields
-Visualization of a vector field
-
-It's like a goated livvy dunne baby gronk rizzler type skibbidy beat on the low. 
-
-To run, you must be the rizzle the rizzel rizzle  q1 |||||||||||||||||||||||||||
-|||||||||||||||||
-||||||||||
-||||||||||||||||||
-|||||||
-||||||
-|||||
-||||
-|||
-||
-|
-
-The amoungus imposter CANNOT HEAR ABOUT THIS 
-IM IN YOUR WALSS
-
-i have brainrot
+Visualization of a vector field using p5js, its purpose solely being deciding whether to develop either an Eulerian field-based fluid simulation or a particle based Lagrangian fluid sim. After careful consideration, because particle-based sims are way cooler visually and Eulerian vector field makes less sense in my head.
