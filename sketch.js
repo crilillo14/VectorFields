@@ -1,27 +1,62 @@
 let Field;
-let vectorScaling = 1;
+let vectorScaling = 50;
 let gapBetweenRows;
 let gapBetweenCols;
 let counter = 0;
 let sliderx , slidery;
+let resetchance = 0.05;
 
 
 function setup() {
-  createCanvas((7 * windowWidth) / 8, (7 * windowHeight) / 8);  
+  createCanvas((7 * windowWidth) / 8, (7 * windowHeight) / 8);
+  Field = generateField(10, 10);
+
+
+
 }
 
 function draw() {
+  background(0, 0, 30);
   counter++;
-
 
   translate(width / 2, height / 2);
   scale(1, -1);
   noStroke();
-  background(0, 0, 30);
-  circle(0, 0, 5);
-  stroke(255);
-  Field = generateField(20, 20);
+
+  circle(0, 0, 3);
+
   
+  //visualizeVelocityField(Field)
+
+  for (i = 0; i < Field.length; i++) {
+  for (j = 0; j < Field[i].length; j++) {
+    let positionVector = Field[i][j][Field[i][j].length - 1]; // get the last position vector
+    let newposition = positionVector.copy();
+    let velocityVector = Field
+    newposition = newposition.add(VectorFunction(positionVector)); // add velocity to position
+    Field[i][j].push(newposition); // push the new position
+
+    for(k = 0; k < Field[i][j].length; k++){
+      let alpha = 255 - 10*(Field[i][j].length - k);
+      stroke(200 , 200, 200, alpha);
+      circle(Field[i][j][k].x , Field[i][j][k].y , 2); // show position
+    }
+
+    if(random(0, 1) < resetchance) {
+      Field[i][j] = getInitialFieldPosition(i , j);
+    }
+  }
+}
+
+
+}
+
+
+
+
+
+
+function visualizeVelocityField(Field) {
   for (let column of Field) {
     for (let positionVector of column) {
 
@@ -30,15 +65,22 @@ function draw() {
       
     }
   }
-
-
 }
 
-function VectorFunction(positionVector) {
-  let x = sin(positionVector.y % (2* PI))
-  let y = cos(positionVector.y % (2 * PI))
+
+
+
+
+function VectorFunction(positionVector , velocityVector) {
+  let x = vectorScaling*sin(positionVector.y % (2* PI))
+  let y = vectorScaling*cos(positionVector.y % (2 * PI))
+  //let x = vectorScaling*positionVector.x;
+  //let y = vectorScaling*positionVector.y;
   return createVector(x , y)
 }
+
+
+
 
 
 
@@ -55,13 +97,19 @@ function generateField(nrows, ncols) {
       let x = (i * gapBetweenRows) - width / 2;
       let y = -1*((j * gapBetweenCols) - height / 2 );
       
-      ColumnVector.push(createVector(x, y));
+      ColumnVector.push([createVector(x, y)]);
     }
     
     field.push(ColumnVector);
   }
 
   return field;
+}
+
+function getInitialFieldPosition(i, j) {
+  let x = (i * gapBetweenRows) - width / 2;
+  let y = -1*((j * gapBetweenCols) - height / 2 );
+  return [createVector(x , y)]
 }
 
 
