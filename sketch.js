@@ -1,7 +1,7 @@
 
 
 let Field;
-let vectorScaling = 50;
+let vectorScaling = 0.01;
 let gapBetweenRows;
 let gapBetweenCols;
 let counter = 0;
@@ -11,7 +11,7 @@ let resetchance = 0.005;
 
 function setup() {
   createCanvas((7 * windowWidth) / 8, (7 * windowHeight) / 8);
-  Field = generateField(40, 40);
+  Field = generateField(60, 60);
   
 
 
@@ -26,7 +26,8 @@ function draw() {
   scale(1, -1);
 
   noStroke()
-  circle(0, 0, 3);
+
+  //circle(0, 0, 3);
 
   
   //visualizeVelocityField(Field)
@@ -53,7 +54,7 @@ function draw() {
       Field[i][j].splice(0, 1)
     }
 
-    if(velocityVector.mag() < 1) { // if the particle is moving too slow, take away from the front
+    if(velocityVector.mag() < .1) { // if the particle is moving too slow, take away from the front
       Field[i][j].splice(Field[i][j].length - 1, 1)
     }
 
@@ -80,8 +81,8 @@ function draw() {
 
 
 function VectorFunction(p) {
-  let x = vectorScaling*p.x;
-  let y = cos(x)
+  let x = vectorScaling*p.x
+  let y = vectorScaling*p.y
   let vector = createVector(x,y)
 
   // Calculate the color based on the vector's direction
