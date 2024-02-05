@@ -1,7 +1,7 @@
 
 
 let Field;
-let vectorScaling = .5;
+let vectorScaling = 50;
 let gapBetweenRows;
 let gapBetweenCols;
 let counter = 0;
@@ -19,7 +19,8 @@ function setup() {
 }
 
 function draw() {
-  background(40);
+  colorMode(RGB)
+  background(0,25, 200,10);
 
   translate(width / 2, height / 2);
   scale(1, -1);
@@ -41,8 +42,9 @@ function draw() {
 
 
     for(k = 0; k < Field[i][j].length; k++){
-      let alpha = 255 / (k + 1); // Add 1 to avoid division by zero
-      p5.
+      //let alpha = 255 / (k + 1); // Add 1 to avoid division by zero
+      
+          
       circle(Field[i][j][k].x , Field[i][j][k].y , 5); // show position
     }
     
@@ -77,11 +79,11 @@ function draw() {
 
 
 
-function VectorFunction(positionVector , velocityVector) {
-  let x = vectorScaling*log(abs(positionVector.x))
-  let y = vectorScaling*log(abs(positionVector.y));
-  let vector = createVector(x , y);
-  
+function VectorFunction(p) {
+  let x = vectorScaling*p.x;
+  let y = cos(x)
+  let vector = createVector(x,y)
+
   // Calculate the color based on the vector's direction
   let hue = (vector.heading() + PI) / (2 * PI) * 255;
   let saturation = 255;
@@ -91,14 +93,22 @@ function VectorFunction(positionVector , velocityVector) {
   colorMode(HSB);
   //stroke(hue, saturation, brightness, 255);
   fill(hue, saturation, brightness, 255); // Set the fill color to the same color as the stroke
-  
-  return vector;
+
+  return createVector(x , y);
+
 } //---------------------------------------------- end of vectorFunction()
 
 
 
 
 
+
+
+
+
+
+
+// Field Generation and getting initial positions
 
 
 function generateField(nrows, ncols) {
@@ -124,7 +134,6 @@ function generateField(nrows, ncols) {
 } // --------------------------------------------- end of generateField()
 
 
-
 function getInitialFieldPosition(i, j) {
   let x = (i * gapBetweenRows) - width / 2;
   let y = -1*((j * gapBetweenCols) - height / 2);
@@ -142,6 +151,16 @@ function getInitialFieldPosition(i, j) {
 
 
 
+
+
+
+
+
+
+
+
+
+// INITIAL OBJECTIVE OF THE PROJECT, RAW VISUALIZATION OF A STATIC VELOCITY FIELD GIVEN SOME FUNCTION OF ITS POSITION
 
 function visualizeVelocityField(Field) {
   for (let column of Field) {
