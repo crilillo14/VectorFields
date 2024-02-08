@@ -5,13 +5,15 @@ let vectorScaling = 0.01;
 let gapBetweenRows;
 let gapBetweenCols;
 let counter = 0;
+let trailLength = 20;
 
 let resetchance = 0.005;
 
 
 function setup() {
-  createCanvas((7 * windowWidth) / 8, (7 * windowHeight) / 8);
+  createCanvas(windowWidth, windowHeight);
   Field = generateField(60, 60);
+  angleMode(DEGREES)
   
 
 
@@ -20,13 +22,15 @@ function setup() {
 
 function draw() {
   colorMode(RGB)
-  background(0,25, 200,10);
+  background(0,25, 200,4);
 
   translate(width / 2, height / 2);
   scale(1, -1);
 
-  noStroke()
 
+  noStroke()
+  fill(255)
+  square(0 , 0, 3)
   //circle(0, 0, 3);
 
   
@@ -36,7 +40,7 @@ function draw() {
   for (j = 0; j < Field[i].length; j++) {
     let positionVector = Field[i][j][Field[i][j].length - 1]; // get the last position vector
     let newposition = positionVector.copy();
-    let velocityVector = VectorFunction(newposition);
+    let velocityVector = CalculateVelocity(newposition);
     newposition = newposition.add(velocityVector); // add velocity to position
     Field[i][j].push(newposition); // push the new position
 
@@ -50,7 +54,7 @@ function draw() {
     }
     
 
-    if(Field[i][j].length > 20) {
+    if(Field[i][j].length > trailLength) {
       Field[i][j].splice(0, 1)
     }
 
@@ -80,21 +84,23 @@ function draw() {
 
 
 
-function VectorFunction(p) {
-  let x = vectorScaling*p.x
-  let y = vectorScaling*p.y
+function CalculateVelocity(p) {
+  let x = sin(p.x)
+  let y = cos(p.y)
   let vector = createVector(x,y)
-
+  vector.setMag(min(vector.mag() , 1))
+  angleMode(RADIANS)
   // Calculate the color based on the vector's direction
   let hue = (vector.heading() + PI) / (2 * PI) * 255;
   let saturation = 255;
   let brightness = vector.mag() / vectorScaling * 255;
-  
+  angleMode(DEGREES)
   // Set the color mode to HSB and the stroke color to the calculated color
   colorMode(HSB);
   //stroke(hue, saturation, brightness, 255);
   fill(hue, saturation, brightness, 255); // Set the fill color to the same color as the stroke
 
+  colorMode(RGB)
   return createVector(x , y);
 
 } //---------------------------------------------- end of vectorFunction()
@@ -167,7 +173,7 @@ function visualizeVelocityField(Field) {
   for (let column of Field) {
     for (let positionVector of column) {
 
-      velocityVector = VectorFunction(positionVector).mult(vectorScaling)
+      velocityVector = CalculateVelocity(positionVector).mult(vectorScaling)
       drawArrow(positionVector, velocityVector, 'blue' )
       
     }

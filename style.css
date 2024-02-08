@@ -13,43 +13,6 @@ canvas {
   display: block;
   max-width: 100%; /* make sure the canvas isn't bigger than the screen */
   max-height: 100%;
-  box-shadow: 
-    0px 0px 5px rgba(255, 0, 255, 0.302), /* inner glow */
-    0px 0px 20px rgba(255, 0, 255, 0.302), /* middle glow */
-    0px 0px 40px rgba(255, 0, 255, 0.302), /* outer glow */
-    0px 0px 80px rgba(255, 0, 255, 0.302); /* far outer glow */
-}
-
-/* Style the div that contains the input elements */
-div {
-  position: absolute; /* position the div above the canvas */
-  top: 10px; /* add some space from the top of the page */
-  left: 10px; /* add some space from the left of the page */
-  background-color: rgba(255, 255, 255, 0.8); /* white background with some transparency */
-  padding: 10px; /* add some space around the text and the edges of the div */
-  border-radius: 5px; /* round the corners of the div */
-}
-
-/* Style the input field */
-input[type="text"] {
-  width: 200px; /* set a fixed width */
-  padding: 5px; /* add some space around the text */
-  border: none; /* remove the default border */
-  border-radius: 3px; /* round the corners */
-}
-
-/* Style the button */
-button {
-  margin-left: 10px; /* add some space to the left of the button */
-  padding: 5px 10px; /* add some space around the text */
-  border: none; /* remove the default border */
-  border-radius: 3px; /* round the corners */
-  background-color: #008CBA; /* set the background color to blue */
-  color: white; /* set the text color to white */
-  cursor: pointer; /* change the cursor when hovering over the button */
-}
-
-/* Change the background color of the button when hovering over it */
-button:hover {
-  background-color: #007B9A;
+  justify-content: center;
+  align-items: center;
 }
