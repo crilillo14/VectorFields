@@ -1,70 +1,120 @@
 
 
 let Field;
-let vectorScaling = 0.01;
 let gapBetweenRows;
 let gapBetweenCols;
-let counter = 0;
-let trailLength = 20;
+let counter = 0; // unused
 
-let resetchance = 0.005;
+//display settings
+let zoomfactor = 0.5
+const n = 30;
+let adjustedn;
+
+// main loop settings
+let vectorScaling = 1; // speed buff multiplier
+let trailLength = 20; // max length of particle trail
+let deathThresholdSpeed = 5; // length at which the particle dies; going too slow
+let maxSpeed = 1; // max speed
+let resetchance = 0.001; // chance that a particle dies at any given frame
+let decayingThreshold = 0.00;
+
+
+//sliders
+let zoomslider, nslider;
+
+
+
+
+
+
+
+
 
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  Field = generateField(60, 60);
+
   angleMode(DEGREES)
+
+  //zoomslider = createSlider(0.5 , 2, 1, 0)
+  //zoomslider.position(20, 20)
+
+    // Create a label for the slider
+    textFont('monospace')
+    zoomLabel = createElement('label', 'ZOOM');
+    zoomLabel.position(20, 20);
+    zoomLabel.style('color', '#fff'); // Change the color to white
+
   
-
-
-
+    // Create the slider
+    zoomslider = createSlider(0.5 , 2, 1, 0);
+    zoomslider.position(20, 50); // Position it below the label
 }
 
+
+
+
+
+
+
+
 function draw() {
+  if(zoomfactor!= zoomslider.value()) {
+    background(0,25,200, 255)
+    zoomfactor = zoomslider.value()
+    adjustedn = n / zoomfactor
+    Field = generateField(adjustedn, adjustedn);
+
+  }
+
+  zoomLabel.html('ZOOM: x' + zoomfactor.toFixed(2));
+
+  //width = width / zoomfactor
+  //height = height / zoomfactor
   colorMode(RGB)
-  background(0,25, 200,4);
 
-  translate(width / 2, height / 2);
   scale(1, -1);
+  translate(width / 2 , -height / 2 );
+
+  background(0,25, 200,4);
+  drawGrid()
 
 
+
+  drawGrid()
   noStroke()
-  fill(255)
-  square(0 , 0, 3)
   //circle(0, 0, 3);
 
   
   //visualizeVelocityField(Field)
 
-  for (i = 0; i < Field.length; i++) {
+  for (i = 0; i < Field.length; i++) {          // MAIN LOOP, UPDATES VELOCITIES AND POSITIONS
   for (j = 0; j < Field[i].length; j++) {
+
     let positionVector = Field[i][j][Field[i][j].length - 1]; // get the last position vector
     let newposition = positionVector.copy();
     let velocityVector = CalculateVelocity(newposition);
     newposition = newposition.add(velocityVector); // add velocity to position
     Field[i][j].push(newposition); // push the new position
 
-
-
-    for(k = 0; k < Field[i][j].length; k++){
-      //let alpha = 255 / (k + 1); // Add 1 to avoid division by zero
-      
-          
-      circle(Field[i][j][k].x , Field[i][j][k].y , 5); // show position
+    for(k = 0; k < Field[i][j].length; k++){  
+      circle(Field[i][j][k].x , Field[i][j][k].y , 1); // show position
     }
-    
 
     if(Field[i][j].length > trailLength) {
       Field[i][j].splice(0, 1)
     }
 
-    if(velocityVector.mag() < .1) { // if the particle is moving too slow, take away from the front
+    if(velocityVector.mag() < decayingThreshold) { // if the particle is moving too slow, take away from the front
       Field[i][j].splice(Field[i][j].length - 1, 1)
+      if(velocityVector.mag() < deathThresholdSpeed) { // if it's gotten too slow, rebirth
+        Field[i][j] = getInitialFieldPosition(i , j);
+      }
     }
-
 
     if(random(0, 1) < resetchance) {
       Field[i][j] = getInitialFieldPosition(i , j);
+
     }
 
 
@@ -76,6 +126,28 @@ function draw() {
 
 
 
+function drawGrid() {
+  let stepx = width / adjustedn
+  let stepy = height / adjustedn
+  let len = 1
+  noStroke()
+  fill(255)
+  circle(0 , 0, 5)
+  stroke(255)
+  line(-width / 2 , 0 , width / 2, 0 )
+  line(0 , -height / 2 , 0 , height / 2)
+  for(i = 1; i < adjustedn / 2; i++) {
+    if(i % 5 == 0) {
+      line((stepx * i), len * 5 , stepx * i  , -len * 5)
+      line(-(stepx * i), len * 5 ,-stepx * i  , -len * 5)
+      line(len * 5, -(stepy * i) , -len * 5 , -stepy * i )
+      line(len * 5, -(stepy * i) , -len * 5 , -stepy * i )
+    } else {
+      line((stepx * i) - (width / 2), len , stepx * i - (width/2) , -len)
+      line(len, (stepy * i) - (height / 2), -len, stepy * i - (height/2))
+    }
+  }
+}
 
 
 
@@ -85,15 +157,17 @@ function draw() {
 
 
 function CalculateVelocity(p) {
-  let x = sin(p.x)
-  let y = cos(p.y)
-  let vector = createVector(x,y)
-  vector.setMag(min(vector.mag() , 1))
+  let x = -p.y - 0.5*p.x
+  let y = p.x
+  let velocity = createVector(x,y)
+  velocity.mult(-vectorScaling)
+  velocity.setMag(min(velocity.mag() , maxSpeed))
+
   angleMode(RADIANS)
   // Calculate the color based on the vector's direction
-  let hue = (vector.heading() + PI) / (2 * PI) * 255;
+  let hue = (velocity.heading() + PI) / (2 * PI) * 255;
   let saturation = 255;
-  let brightness = vector.mag() / vectorScaling * 255;
+  let brightness = velocity.mag()  * 255;
   angleMode(DEGREES)
   // Set the color mode to HSB and the stroke color to the calculated color
   colorMode(HSB);
@@ -101,7 +175,7 @@ function CalculateVelocity(p) {
   fill(hue, saturation, brightness, 255); // Set the fill color to the same color as the stroke
 
   colorMode(RGB)
-  return createVector(x , y);
+  return velocity;
 
 } //---------------------------------------------- end of vectorFunction()
 
@@ -121,8 +195,8 @@ function CalculateVelocity(p) {
 function generateField(nrows, ncols) {
   let field = [];
   
-  gapBetweenRows = width / nrows;
-  gapBetweenCols = height / ncols;
+  gapBetweenRows = (width / nrows) ;
+  gapBetweenCols = (height / ncols) ;
   
   for (let i = 0; i <= nrows; i++) {
     let ColumnVector = [];
@@ -167,6 +241,7 @@ function getInitialFieldPosition(i, j) {
 
 
 
+
 // INITIAL OBJECTIVE OF THE PROJECT, RAW VISUALIZATION OF A STATIC VELOCITY FIELD GIVEN SOME FUNCTION OF ITS POSITION
 
 function visualizeVelocityField(Field) {
@@ -174,7 +249,7 @@ function visualizeVelocityField(Field) {
     for (let positionVector of column) {
 
       velocityVector = CalculateVelocity(positionVector).mult(vectorScaling)
-      drawArrow(positionVector, velocityVector, 'blue' )
+      drawArrow(positionVector, velocityVector, 'red' )
       
     }
   }
