@@ -16,7 +16,7 @@ let trailLength = 20; // max length of particle trail
 let deathThresholdSpeed = 5; // length at which the particle dies; going too slow
 let maxSpeed = 1; // max speed
 let resetchance = 0.001; // chance that a particle dies at any given frame
-let decayingThreshold = 0.00;
+let decayingThreshold = 0.005;
 
 
 //sliders
