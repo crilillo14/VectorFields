@@ -9,19 +9,19 @@ let counter = 0; // unused
 let zoomfactor = 0.5
 const n = 30;
 let adjustedn;
+let simwidth, simlength;
 
 // main loop settings
 let vectorScaling = 1; // speed buff multiplier
 let trailLength = 20; // max length of particle trail
 let deathThresholdSpeed = 5; // length at which the particle dies; going too slow
 let maxSpeed = 1; // max speed
-let resetchance = 0.001; // chance that a particle dies at any given frame
-let decayingThreshold = 0.005;
+let resetchance = 0.01; // chance that a particle dies at any given frame
+let decayingThreshold = 0.05;
 
 
 //sliders
-let zoomslider, nslider;
-
+let zoomslider, translationX = 0, translationY = 0;
 
 
 
@@ -32,6 +32,7 @@ let zoomslider, nslider;
 
 
 function setup() {
+
   createCanvas(windowWidth, windowHeight);
 
   angleMode(DEGREES)
@@ -59,7 +60,10 @@ function setup() {
 
 
 function draw() {
-  if(zoomfactor!= zoomslider.value()) {
+  let translated = false;
+
+
+  if(zoomfactor!= zoomslider.value() || translated) {
     background(0,25,200, 255)
     zoomfactor = zoomslider.value()
     adjustedn = n / zoomfactor
@@ -69,59 +73,68 @@ function draw() {
 
   zoomLabel.html('ZOOM: x' + zoomfactor.toFixed(2));
 
-  //width = width / zoomfactor
-  //height = height / zoomfactor
-  colorMode(RGB)
 
   scale(1, -1);
-  translate(width / 2 , -height / 2 );
+  translate(width / 2, -height / 2 );
 
-  background(0,25, 200,4);
+  colorMode(RGB)
+  background(0, 25, 200, 5);
   drawGrid()
 
 
 
-  drawGrid()
   noStroke()
-  //circle(0, 0, 3);
 
-  
   //visualizeVelocityField(Field)
+  gameLoop(Field)
+
+} // ---------------------------------------------------- end of draw()
+
+
+
+
+
+
+
+
+function gameLoop(Field) {
 
   for (i = 0; i < Field.length; i++) {          // MAIN LOOP, UPDATES VELOCITIES AND POSITIONS
-  for (j = 0; j < Field[i].length; j++) {
-
-    let positionVector = Field[i][j][Field[i][j].length - 1]; // get the last position vector
-    let newposition = positionVector.copy();
-    let velocityVector = CalculateVelocity(newposition);
-    newposition = newposition.add(velocityVector); // add velocity to position
-    Field[i][j].push(newposition); // push the new position
-
-    for(k = 0; k < Field[i][j].length; k++){  
-      circle(Field[i][j][k].x , Field[i][j][k].y , 1); // show position
-    }
-
-    if(Field[i][j].length > trailLength) {
-      Field[i][j].splice(0, 1)
-    }
-
-    if(velocityVector.mag() < decayingThreshold) { // if the particle is moving too slow, take away from the front
-      Field[i][j].splice(Field[i][j].length - 1, 1)
-      if(velocityVector.mag() < deathThresholdSpeed) { // if it's gotten too slow, rebirth
-        Field[i][j] = getInitialFieldPosition(i , j);
+    for (j = 0; j < Field[i].length; j++) {
+  
+      let positionVector = Field[i][j][Field[i][j].length - 1]; // get the last position vector
+      let newposition = positionVector.copy();
+      let velocityVector = CalculateVelocity(newposition);
+      newposition = newposition.add(velocityVector); // add velocity to position
+      Field[i][j].push(newposition); // push the new position
+  
+      for(k = 0; k < Field[i][j].length; k++){  
+        circle(Field[i][j][k].x , Field[i][j][k].y , 1); // show position
       }
+  
+      if(Field[i][j].length > trailLength) {
+        Field[i][j].splice(0, 1)
+      }
+  
+      if(velocityVector.mag() < decayingThreshold) { // if the particle is moving too slow, take away from the front
+        Field[i][j].splice(Field[i][j].length - 1, 1)
+        if(velocityVector.mag() < deathThresholdSpeed) { // if it's gotten too slow, rebirth
+          Field[i][j] = getInitialFieldPosition(i , j);
+        }
+      }
+  
+      if(random(0, 1) < resetchance) { // particle dies with p = resetchance
+        Field[i][j] = getInitialFieldPosition(i , j);
+  
+      }
+  
+  
     }
-
-    if(random(0, 1) < resetchance) {
-      Field[i][j] = getInitialFieldPosition(i , j);
-
-    }
-
-
   }
 }
 
-} // ---------------------------------------------------- end of draw()
+
+
 
 
 
@@ -129,7 +142,7 @@ function draw() {
 function drawGrid() {
   let stepx = width / adjustedn
   let stepy = height / adjustedn
-  let len = 1
+  let len = 2
   noStroke()
   fill(255)
   circle(0 , 0, 5)
@@ -140,11 +153,13 @@ function drawGrid() {
     if(i % 5 == 0) {
       line((stepx * i), len * 5 , stepx * i  , -len * 5)
       line(-(stepx * i), len * 5 ,-stepx * i  , -len * 5)
-      line(len * 5, -(stepy * i) , -len * 5 , -stepy * i )
+      line(len * 5, (stepy * i) , -len * 5 , stepy * i )
       line(len * 5, -(stepy * i) , -len * 5 , -stepy * i )
     } else {
-      line((stepx * i) - (width / 2), len , stepx * i - (width/2) , -len)
-      line(len, (stepy * i) - (height / 2), -len, stepy * i - (height/2))
+      line((stepx * i) , len , stepx * i , -len)
+      line(-(stepx * i), len , -stepx * i , -len)
+      line(len, -(stepy * i), -len, -stepy * i)
+      line(len, (stepy * i) , -len, (stepy * i))
     }
   }
 }
@@ -157,7 +172,7 @@ function drawGrid() {
 
 
 function CalculateVelocity(p) {
-  let x = -p.y - 0.5*p.x
+  let x = -p.y + 0.5*p.x
   let y = p.x
   let velocity = createVector(x,y)
   velocity.mult(-vectorScaling)
@@ -192,7 +207,7 @@ function CalculateVelocity(p) {
 // Field Generation and getting initial positions
 
 
-function generateField(nrows, ncols) {
+function generateField(nrows, ncols , translationX , translationY) {
   let field = [];
   
   gapBetweenRows = (width / nrows) ;
@@ -202,8 +217,8 @@ function generateField(nrows, ncols) {
     let ColumnVector = [];
     
     for (let j = 0; j <= ncols; j++) {
-      let x = (i * gapBetweenRows) - width / 2;
-      let y = -1*((j * gapBetweenCols) - height / 2 );
+      let x = (i * gapBetweenRows) - (width / 2) + translationX;
+      let y = -((j * gapBetweenCols) - (height / 2) + translationY) ;
       
       ColumnVector.push([createVector(x, y)]);
     }
@@ -216,8 +231,8 @@ function generateField(nrows, ncols) {
 
 
 function getInitialFieldPosition(i, j) {
-  let x = (i * gapBetweenRows) - width / 2;
-  let y = -1*((j * gapBetweenCols) - height / 2);
+  let x = (i * gapBetweenRows) - width / 2 + translationX;
+  let y = -1*((j * gapBetweenCols) - height / 2) + translationY;
   return [createVector(x , y)]
 }
 
@@ -248,7 +263,7 @@ function visualizeVelocityField(Field) {
   for (let column of Field) {
     for (let positionVector of column) {
 
-      velocityVector = CalculateVelocity(positionVector).mult(vectorScaling)
+      velocityVector = CalculateVelocity(positionVector)
       drawArrow(positionVector, velocityVector, 'red' )
       
     }
@@ -264,7 +279,7 @@ function drawArrow(base, vec, myColor) {
   fill(myColor);
   
   translate(base.x + vec.x, base.y + vec.y); // Move to the end of the vector
-  
+  angleMode(RADIANS)
   let angle = atan2(vec.y, vec.x);
   rotate(angle); // Rotate the arrow to point in the direction of the vector
   
