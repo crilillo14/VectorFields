@@ -49,7 +49,7 @@ function setup() {
   
     // Create the slider
     zoomslider = createSlider(0.5 , 2, 1, 0);
-    zoomslider.position(20, 50); // Position it below the label
+    //zoomslider.position(20, 50); // Position it below the label
 }
 
 
